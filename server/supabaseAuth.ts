@@ -7,12 +7,9 @@ import { storage } from "./storage";
 import bcrypt from "bcrypt";
 import './types'; // Import session type extensions
 
-// Simple password hashing (in production, use a proper auth service)
+// Password hashing utilities
 const hashPassword = (password: string) => bcrypt.hashSync(password, 10);
 const comparePassword = (password: string, hash: string) => bcrypt.compareSync(password, hash);
-
-// In-memory user store for demo (in production, use Supabase Auth or database)
-const userStore = new Map<string, { email: string; password: string; firstName?: string; lastName?: string }>();
 
 // Session configuration
 export function getSession() {
@@ -49,25 +46,20 @@ export async function setupAuth(app: Express) {
       const { email, password, firstName, lastName } = req.body;
       
       // Check if user already exists
-      if (userStore.has(email)) {
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
         return res.status(400).json({ message: "User already exists" });
       }
       
-      // Hash password and store user
+      // Hash password
       const hashedPassword = hashPassword(password);
       const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       
-      userStore.set(email, {
-        email,
-        password: hashedPassword,
-        firstName,
-        lastName,
-      });
-      
-      // Create user in database
-      await storage.upsertUser({
+      // Create user in database with password hash
+      const user = await storage.upsertUser({
         id: userId,
         email,
+        passwordHash: hashedPassword,
         firstName,
         lastName,
       });
@@ -92,33 +84,34 @@ export async function setupAuth(app: Express) {
     try {
       const { email, password } = req.body;
       
-      // Check if user exists
-      const user = userStore.get(email);
-      if (!user) {
-        return res.status(401).json({ message: "Invalid email or password" });
-      }
-      
-      // Verify password
-      if (!comparePassword(password, user.password)) {
-        return res.status(401).json({ message: "Invalid email or password" });
-      }
-      
       // Get user from database
-      const dbUser = await storage.getUserByEmail(email);
-      if (!dbUser) {
-        return res.status(401).json({ message: "User not found" });
+      const user = await storage.getUserByEmail(email);
+      if (!user || !user.passwordHash) {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+      
+      // Verify password against stored hash
+      if (!comparePassword(password, user.passwordHash)) {
+        return res.status(401).json({ message: "Invalid email or password" });
       }
       
       // Store user in session
-      req.session.userId = dbUser.id;
+      req.session.userId = user.id;
       req.session.user = {
-        id: dbUser.id,
-        email: dbUser.email || email,
-        firstName: user.firstName,
-        lastName: user.lastName,
+        id: user.id,
+        email: user.email || email,
+        firstName: user.firstName || undefined,
+        lastName: user.lastName || undefined,
       };
       
-      res.json({ user: { id: dbUser.id, email, firstName: user.firstName, lastName: user.lastName } });
+      res.json({ 
+        user: { 
+          id: user.id, 
+          email: user.email, 
+          firstName: user.firstName, 
+          lastName: user.lastName 
+        } 
+      });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
