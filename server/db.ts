@@ -1,12 +1,19 @@
 // Supabase Database Connection
 // Reference: blueprint:javascript_supabase
-import { Pool } from '@neondatabase/serverless';
+import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
-import ws from "ws";
 import * as schema from "@shared/schema";
-import { neonConfig } from '@neondatabase/serverless';
 
-neonConfig.webSocketConstructor = ws;
+// Configure WebSocket for different environments
+if (process.env.VERCEL === '1') {
+  // Vercel serverless - use built-in WebSocket
+  neonConfig.webSocketConstructor = WebSocket;
+} else {
+  // Local development - use ws package
+  import('ws').then((ws) => {
+    neonConfig.webSocketConstructor = ws.default;
+  });
+}
 
 if (!process.env.DATABASE_URL) {
   throw new Error(
