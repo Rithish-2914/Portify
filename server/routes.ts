@@ -1,8 +1,9 @@
-// Reference: javascript_log_in_with_replit blueprint
+// API Routes for Portify
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./supabaseAuth";
+import { generatePortfolioContent, customizeTemplate } from "./aiService";
 import { 
   insertPortfolioSchema,
   insertProjectSchema,
@@ -16,17 +17,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ============================================================================
   await setupAuth(app);
 
-  // Get current user (protected)
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
+  // Get current user is handled in supabaseAuth.ts
 
   // ============================================================================
   // Portfolio routes
@@ -35,7 +26,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get user's portfolios (protected)
   app.get("/api/portfolios", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const portfolios = await storage.getUserPortfolios(userId);
       res.json(portfolios);
     } catch (error) {
@@ -55,7 +46,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Verify user owns this portfolio
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       if (portfolio.userId !== userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -70,7 +61,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create portfolio (protected)
   app.post("/api/portfolios", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       
       // Validate request body
       const validatedData = insertPortfolioSchema.parse(req.body);
@@ -100,7 +91,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/portfolios/:id", isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
 
       // Verify user owns this portfolio
       const existingPortfolio = await storage.getPortfolio(id);
@@ -123,7 +114,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/portfolios/:id", isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
 
       // Verify user owns this portfolio
       const portfolio = await storage.getPortfolio(id);
@@ -211,7 +202,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Verify user owns the portfolio
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const portfolio = await storage.getPortfolio(portfolioId as string);
       if (!portfolio || portfolio.userId !== userId) {
         return res.status(403).json({ message: "Forbidden" });
@@ -228,7 +219,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create project (protected)
   app.post("/api/projects", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const validatedData = insertProjectSchema.parse(req.body);
 
       // Verify user owns the portfolio
@@ -252,7 +243,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/projects/:id", isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
 
       // Get project and verify ownership through portfolio
       const existingProjects = await storage.getPortfolioProjects(req.body.portfolioId);
@@ -279,7 +270,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/projects/:id", isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
 
       // Note: We need to get all portfolios to find which one owns this project
       // In a real app, you might want to add a direct query for this
@@ -320,7 +311,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Verify user owns the portfolio
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const portfolio = await storage.getPortfolio(portfolioId as string);
       if (!portfolio || portfolio.userId !== userId) {
         return res.status(403).json({ message: "Forbidden" });
@@ -337,7 +328,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create social link (protected)
   app.post("/api/social-links", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const validatedData = insertSocialLinkSchema.parse(req.body);
 
       // Verify user owns the portfolio
@@ -361,7 +352,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/social-links/:id", isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
 
       // Get link and verify ownership through portfolio
       const existingLinks = await storage.getPortfolioSocialLinks(req.body.portfolioId);
@@ -388,7 +379,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/social-links/:id", isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
 
       // Note: Similar to projects, we need to find which portfolio owns this link
       const portfolios = await storage.getUserPortfolios(userId);
@@ -411,6 +402,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting social link:", error);
       res.status(500).json({ message: "Failed to delete social link" });
+    }
+  });
+
+  // ============================================================================
+  // AI Routes (AI-powered portfolio customization)
+  // ============================================================================
+
+  // Generate portfolio content with AI (protected)
+  app.post("/api/ai/generate-portfolio", isAuthenticated, async (req, res) => {
+    try {
+      const userInput = req.body;
+      
+      const generatedContent = await generatePortfolioContent(userInput);
+      res.json(generatedContent);
+    } catch (error: any) {
+      console.error("Error generating portfolio content:", error);
+      res.status(500).json({ message: error.message || "Failed to generate content" });
+    }
+  });
+
+  // Customize template with user data (protected)
+  app.post("/api/ai/customize-template", isAuthenticated, async (req, res) => {
+    try {
+      const { templateHtml, userData } = req.body;
+      
+      if (!templateHtml || !userData) {
+        return res.status(400).json({ message: "Template HTML and user data are required" });
+      }
+      
+      const customizedHtml = await customizeTemplate(templateHtml, userData);
+      res.json({ customizedHtml });
+    } catch (error: any) {
+      console.error("Error customizing template:", error);
+      res.status(500).json({ message: error.message || "Failed to customize template" });
     }
   });
 

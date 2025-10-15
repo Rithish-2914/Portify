@@ -1,5 +1,5 @@
 // Schema definitions for Portify - Portfolio Builder Platform
-// Reference: javascript_log_in_with_replit and javascript_database blueprints
+// Reference: blueprint:javascript_supabase
 
 import { sql } from 'drizzle-orm';
 import { relations } from 'drizzle-orm';
@@ -17,10 +17,10 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // ============================================================================
-// AUTH TABLES (Required by Replit Auth - DO NOT REMOVE)
+// AUTH TABLES (Supabase handles auth.users, we just track session)
 // ============================================================================
 
-// Session storage table - Required for Replit Auth
+// Session storage table - for session management
 export const sessions = pgTable(
   "sessions",
   {
@@ -31,9 +31,9 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table - Required for Replit Auth
+// User profile table - synced with Supabase auth
 export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id").primaryKey(), // Matches Supabase auth.users.id
   email: varchar("email").unique(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
