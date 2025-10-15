@@ -63,7 +63,10 @@ async function initializeApp() {
 // Check if running on Vercel
 const isVercel = process.env.VERCEL === '1';
 
-if (!isVercel) {
+if (isVercel) {
+  // Vercel deployment - use top-level await to block export until initialized
+  await initializeApp();
+} else {
   // Local development - start server
   (async () => {
     const server = await initializeApp();
@@ -81,9 +84,6 @@ if (!isVercel) {
       log(`serving on port ${port}`);
     });
   })();
-} else {
-  // Vercel deployment - just initialize the app
-  initializeApp();
 }
 
 // Export for Vercel serverless

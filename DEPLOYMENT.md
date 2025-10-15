@@ -47,9 +47,12 @@ You need to configure the following environment variables in Vercel:
 
 2. **Configure Build Settings**
    - Vercel will auto-detect the Node.js project
+   - Framework Preset: Other
    - Build Command: `npm run build`
-   - Output Directory: `dist`
+   - Output Directory: Leave empty (handled by vercel.json)
    - Install Command: `npm install`
+   
+   Note: The `vercel.json` configuration handles the build output automatically. The build command compiles both the client (Vite) and server (esbuild) bundles.
 
 3. **Add Environment Variables**
    - In the project settings, go to "Environment Variables"
