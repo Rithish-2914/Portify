@@ -272,20 +272,22 @@ export default function Landing() {
                 }}
                 data-testid={`card-category-${category.name.toLowerCase()}`}
               >
-                <Card className="group relative overflow-hidden border-white/10 bg-white/5 backdrop-blur-sm hover:border-white/30 hover:bg-white/10 transition-all duration-300 cursor-pointer transform-gpu perspective-1000">
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <CardContent className="flex flex-col items-center justify-center p-8 text-center relative z-10">
-                    <motion.div 
-                      className="mb-4 rounded-2xl bg-white/10 p-4 backdrop-blur-sm group-hover:bg-white/20 transition-colors"
-                      whileHover={{ rotateY: 180 }}
-                      transition={{ duration: 0.6 }}
-                    >
-                      <category.icon className="h-8 w-8 text-white" />
-                    </motion.div>
-                    <h3 className="mb-2 font-bold text-lg">{category.name}</h3>
-                    <p className="text-sm text-white/50">{category.count}</p>
-                  </CardContent>
-                </Card>
+                <div className="perspective-1000">
+                  <Card className="group relative overflow-hidden border-white/10 bg-white/5 backdrop-blur-sm hover:border-white/30 hover:bg-white/10 transition-all duration-300 cursor-pointer transform-gpu preserve-3d">
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <CardContent className="flex flex-col items-center justify-center p-8 text-center relative z-10">
+                      <motion.div 
+                        className="mb-4 rounded-2xl bg-white/10 p-4 backdrop-blur-sm group-hover:bg-white/20 transition-colors preserve-3d"
+                        whileHover={{ rotateY: 180 }}
+                        transition={{ duration: 0.6 }}
+                      >
+                        <category.icon className="h-8 w-8 text-white" />
+                      </motion.div>
+                      <h3 className="mb-2 font-bold text-lg">{category.name}</h3>
+                      <p className="text-sm text-white/50">{category.count}</p>
+                    </CardContent>
+                  </Card>
+                </div>
               </motion.div>
             ))}
           </div>
@@ -310,31 +312,33 @@ export default function Landing() {
 
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ 
-                  scale: 1.05,
-                  rotateY: 5,
-                  rotateX: 5,
-                  transition: { duration: 0.3 }
-                }}
-                data-testid={`card-feature-${index}`}
-              >
-                <Card className="relative h-full overflow-hidden border-white/10 bg-white/5 backdrop-blur-sm hover:border-white/30 hover:bg-white/10 transition-all duration-300 transform-gpu">
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300" />
-                  <CardContent className="p-8 relative z-10">
-                    <div className="mb-6 inline-flex rounded-xl bg-white/10 p-4 backdrop-blur-sm">
-                      <feature.icon className="h-8 w-8 text-white" />
-                    </div>
-                    <h3 className="mb-3 text-2xl font-bold">{feature.title}</h3>
-                    <p className="text-white/60 leading-relaxed">{feature.description}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
+              <div className="perspective-1000" data-testid={`card-feature-${index}`}>
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  whileHover={{ 
+                    scale: 1.05,
+                    rotateY: 5,
+                    rotateX: 5,
+                    transition: { duration: 0.3 }
+                  }}
+                  className="preserve-3d h-full"
+                >
+                  <Card className="relative h-full overflow-hidden border-white/10 bg-white/5 backdrop-blur-sm hover:border-white/30 hover:bg-white/10 transition-all duration-300 transform-gpu">
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300" />
+                    <CardContent className="p-8 relative z-10">
+                      <div className="mb-6 inline-flex rounded-xl bg-white/10 p-4 backdrop-blur-sm">
+                        <feature.icon className="h-8 w-8 text-white" />
+                      </div>
+                      <h3 className="mb-3 text-2xl font-bold">{feature.title}</h3>
+                      <p className="text-white/60 leading-relaxed">{feature.description}</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </div>
             ))}
           </div>
         </div>
