@@ -9,8 +9,10 @@ Portify is a no-code portfolio builder platform designed to help users create pr
 ### Design Guidelines
 - Follow design_guidelines.md religiously for all UI implementations
 - Use dark mode as primary (dark-first design)
+- **Pure black/white monochrome color palette** - No vibrant colors except for destructive actions
 - Maintain consistent spacing: micro (1-4), component (4-8), section (12-24)
-- Use vibrant colors sparingly for CTAs and highlights
+- Implement 3D effects with perspective utilities and framer-motion animations
+- Use glassmorphism effects (backdrop-blur, semi-transparent backgrounds)
 - Ensure pixel-perfect responsive design across breakpoints
 
 ### Development Workflow
@@ -43,11 +45,15 @@ Portify is built with a modern web stack, featuring a React frontend and an Expr
 - Session management with connect-pg-simple
 
 **Design System:**
-- Primary color: Purple (265 85% 62%)
-- Accent color: Cyan (180 75% 55%)
+- Color Scheme: Pure black/white monochrome palette
+  - Light mode: 0 0% 98% background, 0 0% 0% foreground/primary
+  - Dark mode: 0 0% 0% background, 0 0% 98% foreground (default)
 - Font: Inter (400, 500, 600, 700, 800)
 - Dark mode first approach
 - Consistent spacing using Tailwind scale
+- 3D Effects: Custom perspective utilities (perspective-1000, preserve-3d, transform-gpu)
+- Animations: Framer-motion with rotateX/Y, scale, and smooth transitions
+- Glassmorphism: backdrop-blur with semi-transparent backgrounds (white/5, white/10)
 
 ### Database Schema
 
