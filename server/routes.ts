@@ -3,6 +3,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./supabaseAuth";
+import { isAdmin } from "./adminMiddleware";
 import { generatePortfolioContent, customizeTemplate } from "./aiService";
 import { TemplateCustomizer } from "./templateCustomizer";
 import { 
@@ -174,13 +175,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create template (protected - requires authentication)
-  app.post("/api/templates", isAuthenticated, async (req: any, res) => {
+  // Create template (admin only)
+  app.post("/api/templates", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
-      // TODO: Add admin role check in production
-      // For now, only authenticated users can create templates
-      // In production, add: if (!req.user.isAdmin) return res.status(403).json({ message: "Admin access required" });
-      
       const validatedData = insertTemplateSchema.parse(req.body);
       const template = await storage.createTemplate(validatedData);
       res.status(201).json(template);
@@ -190,6 +187,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
       }
       res.status(500).json({ message: "Failed to create template" });
+    }
+  });
+
+  // Delete template (admin only)
+  app.delete("/api/templates/:id", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Check if template exists
+      const existing = await storage.getTemplate(id);
+      if (!existing) {
+        return res.status(404).json({ message: "Template not found" });
+      }
+      
+      await storage.deleteTemplate(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting template:", error);
+      res.status(500).json({ message: "Failed to delete template" });
+    }
+  });
+
+  // Update template (admin only)
+  app.patch("/api/templates/:id", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Check if template exists
+      const existing = await storage.getTemplate(id);
+      if (!existing) {
+        return res.status(404).json({ message: "Template not found" });
+      }
+      
+      // Validate and filter allowed fields
+      const allowedFields = ['name', 'category', 'description', 'thumbnailUrl', 'previewUrl', 'htmlContent', 'cssContent', 'jsContent', 'isFeatured'];
+      const updateData: any = {};
+      
+      for (const field of allowedFields) {
+        if (req.body[field] !== undefined) {
+          updateData[field] = req.body[field];
+        }
+      }
+      
+      const template = await storage.updateTemplate(id, updateData);
+      res.json(template);
+    } catch (error) {
+      console.error("Error updating template:", error);
+      res.status(500).json({ message: "Failed to update template" });
     }
   });
 

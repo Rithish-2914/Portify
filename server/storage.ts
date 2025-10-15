@@ -37,6 +37,8 @@ export interface IStorage {
   getTemplate(id: string): Promise<Template | undefined>;
   getTemplatesByCategory(category: string): Promise<Template[]>;
   createTemplate(template: InsertTemplate): Promise<Template>;
+  updateTemplate(id: string, data: Partial<Template>): Promise<Template>;
+  deleteTemplate(id: string): Promise<void>;
   incrementTemplateUsage(id: string): Promise<void>;
 
   // Project operations
@@ -151,6 +153,19 @@ export class DatabaseStorage implements IStorage {
       .values(templateData)
       .returning();
     return template;
+  }
+
+  async updateTemplate(id: string, data: Partial<Template>): Promise<Template> {
+    const [template] = await db
+      .update(templates)
+      .set(data)
+      .where(eq(templates.id, id))
+      .returning();
+    return template;
+  }
+
+  async deleteTemplate(id: string): Promise<void> {
+    await db.delete(templates).where(eq(templates.id, id));
   }
 
   async incrementTemplateUsage(id: string): Promise<void> {

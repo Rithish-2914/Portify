@@ -13,6 +13,7 @@ import Onboarding from "@/pages/onboarding";
 import Dashboard from "@/pages/dashboard";
 import Editor from "@/pages/editor";
 import TemplateUpload from "@/pages/template-upload";
+import AdminDashboard from "@/pages/admin-dashboard";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -33,6 +34,7 @@ function Router() {
           <Route path="/templates" component={Templates} />
           <Route path="/editor" component={Editor} />
           <Route path="/template-upload" component={TemplateUpload} />
+          <Route path="/admin" component={AdminDashboard} />
         </>
       )}
       <Route component={NotFound} />

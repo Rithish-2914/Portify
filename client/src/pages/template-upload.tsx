@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -33,7 +34,38 @@ type TemplateFormData = z.infer<typeof templateSchema>;
 
 export default function TemplateUpload() {
   const { toast } = useToast();
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const [, setLocation] = useLocation();
   const [previewMode, setPreviewMode] = useState<"split" | "full">("split");
+
+  // Redirect if not admin
+  useEffect(() => {
+    if (!isLoading && (!isAuthenticated || !user?.isAdmin)) {
+      toast({
+        title: "Access Denied",
+        description: "Admin access required to upload templates",
+        variant: "destructive",
+      });
+      setLocation("/dashboard");
+    }
+  }, [isAuthenticated, isLoading, user, toast, setLocation]);
+
+  // Show loading while checking auth
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Block render for non-admins - return null to prevent UI from showing
+  if (!isAuthenticated || !user?.isAdmin) {
+    return null;
+  }
 
   const form = useForm<TemplateFormData>({
     resolver: zodResolver(templateSchema),
