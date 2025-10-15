@@ -137,10 +137,10 @@ export default function Landing() {
           <div className="flex items-center gap-4">
             <ThemeToggle />
             <Button asChild variant="ghost" data-testid="button-login">
-              <a href="/api/login">Log In</a>
+              <a href="/auth">Log In</a>
             </Button>
             <Button asChild data-testid="button-signup">
-              <a href="/api/login">Get Started</a>
+              <a href="/auth">Get Started</a>
             </Button>
           </div>
         </div>
@@ -173,7 +173,7 @@ export default function Landing() {
             
             <div className="flex flex-wrap items-center justify-center gap-4">
               <Button asChild size="lg" className="text-base" data-testid="button-hero-cta">
-                <a href="/api/login">
+                <a href="/auth">
                   Start Building Free
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </a>
@@ -324,7 +324,7 @@ export default function Landing() {
                     variant={plan.highlighted ? "default" : "outline"}
                     data-testid={`button-pricing-${plan.name.toLowerCase()}`}
                   >
-                    <a href="/api/login">{plan.cta}</a>
+                    <a href="/auth">{plan.cta}</a>
                   </Button>
                   <ul className="space-y-3">
                     {plan.features.map((feature, i) => (
@@ -352,7 +352,7 @@ export default function Landing() {
               Join thousands of creators who have already built their dream portfolio
             </p>
             <Button asChild size="lg" className="text-base" data-testid="button-final-cta">
-              <a href="/api/login">
+              <a href="/auth">
                 Get Started Free
                 <ArrowRight className="ml-2 h-5 w-5" />
               </a>

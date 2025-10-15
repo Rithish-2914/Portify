@@ -66,7 +66,7 @@ export default function Templates() {
           <div className="flex items-center gap-4">
             <ThemeToggle />
             <Button asChild data-testid="button-login">
-              <a href="/api/login">Get Started</a>
+              <a href="/auth">Get Started</a>
             </Button>
           </div>
         </div>

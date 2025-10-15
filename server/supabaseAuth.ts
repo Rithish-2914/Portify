@@ -1,41 +1,18 @@
 // Supabase Authentication Setup
-import { createClient } from '@supabase/supabase-js';
+// Using session-based auth with Supabase PostgreSQL database
 import type { Express, RequestHandler } from "express";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
+import { storage } from "./storage";
+import bcrypt from "bcrypt";
 import './types'; // Import session type extensions
 
-// Extract Supabase URL from DATABASE_URL
-// DATABASE_URL format: postgresql://[user]:[password]@[host]/[database]
-function getSupabaseUrl(): string {
-  const dbUrl = process.env.DATABASE_URL;
-  if (!dbUrl) {
-    throw new Error("DATABASE_URL not set");
-  }
-  
-  // Extract host from connection string
-  const match = dbUrl.match(/@([^/]+)\//);
-  if (!match) {
-    throw new Error("Invalid DATABASE_URL format");
-  }
-  
-  const host = match[1];
-  // Supabase URL format: https://[project-ref].supabase.co
-  const projectRef = host.split('.')[0];
-  return `https://${projectRef}.supabase.co`;
-}
+// Simple password hashing (in production, use a proper auth service)
+const hashPassword = (password: string) => bcrypt.hashSync(password, 10);
+const comparePassword = (password: string, hash: string) => bcrypt.compareSync(password, hash);
 
-// Initialize Supabase client
-export const supabase = createClient(
-  getSupabaseUrl(),
-  process.env.SUPABASE_ANON_KEY || '', // Will be optional for now
-  {
-    auth: {
-      autoRefreshToken: true,
-      persistSession: true,
-    }
-  }
-);
+// In-memory user store for demo (in production, use Supabase Auth or database)
+const userStore = new Map<string, { email: string; password: string; firstName?: string; lastName?: string }>();
 
 // Session configuration
 export function getSession() {
@@ -71,33 +48,40 @@ export async function setupAuth(app: Express) {
     try {
       const { email, password, firstName, lastName } = req.body;
       
-      const { data, error } = await supabase.auth.signUp({
+      // Check if user already exists
+      if (userStore.has(email)) {
+        return res.status(400).json({ message: "User already exists" });
+      }
+      
+      // Hash password and store user
+      const hashedPassword = hashPassword(password);
+      const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      userStore.set(email, {
         email,
-        password,
-        options: {
-          data: {
-            first_name: firstName,
-            last_name: lastName,
-          }
-        }
+        password: hashedPassword,
+        firstName,
+        lastName,
       });
       
-      if (error) {
-        return res.status(400).json({ message: error.message });
-      }
+      // Create user in database
+      await storage.upsertUser({
+        id: userId,
+        email,
+        firstName,
+        lastName,
+      });
       
       // Store user in session
-      if (data.user) {
-        req.session.userId = data.user.id;
-        req.session.user = {
-          id: data.user.id,
-          email: data.user.email,
-          firstName,
-          lastName,
-        };
-      }
+      req.session.userId = userId;
+      req.session.user = {
+        id: userId,
+        email,
+        firstName,
+        lastName,
+      };
       
-      res.json({ user: data.user });
+      res.json({ user: { id: userId, email, firstName, lastName } });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
@@ -108,27 +92,33 @@ export async function setupAuth(app: Express) {
     try {
       const { email, password } = req.body;
       
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      // Check if user exists
+      const user = userStore.get(email);
+      if (!user) {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
       
-      if (error) {
-        return res.status(401).json({ message: error.message });
+      // Verify password
+      if (!comparePassword(password, user.password)) {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+      
+      // Get user from database
+      const dbUser = await storage.getUserByEmail(email);
+      if (!dbUser) {
+        return res.status(401).json({ message: "User not found" });
       }
       
       // Store user in session
-      if (data.user) {
-        req.session.userId = data.user.id;
-        req.session.user = {
-          id: data.user.id,
-          email: data.user.email,
-          firstName: data.user.user_metadata?.first_name,
-          lastName: data.user.user_metadata?.last_name,
-        };
-      }
+      req.session.userId = dbUser.id;
+      req.session.user = {
+        id: dbUser.id,
+        email: dbUser.email || email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      };
       
-      res.json({ user: data.user });
+      res.json({ user: { id: dbUser.id, email, firstName: user.firstName, lastName: user.lastName } });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
@@ -137,7 +127,6 @@ export async function setupAuth(app: Express) {
   // Sign out endpoint
   app.post("/api/auth/signout", async (req, res) => {
     try {
-      await supabase.auth.signOut();
       req.session.destroy(() => {
         res.json({ message: "Signed out successfully" });
       });
@@ -153,18 +142,12 @@ export async function setupAuth(app: Express) {
     }
     
     try {
-      const { data, error } = await supabase.auth.getUser();
-      
-      if (error || !data.user) {
+      const user = await storage.getUser(req.session.userId);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
       
-      res.json({
-        id: data.user.id,
-        email: data.user.email,
-        firstName: data.user.user_metadata?.first_name,
-        lastName: data.user.user_metadata?.last_name,
-      });
+      res.json(user);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }

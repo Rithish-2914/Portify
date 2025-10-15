@@ -13,6 +13,31 @@ Portify is a modern portfolio builder platform that allows users to create stunn
 
 ## Recent Changes
 
+### Phase 2: Supabase Migration & AI Integration (Completed)
+**Date:** October 15, 2025
+
+- **Backend Migration to Supabase:**
+  - Migrated from Replit Auth to Supabase Auth
+  - Updated database connection to use Supabase PostgreSQL
+  - Created new auth endpoints (signup, signin, signout)
+  - Updated all API routes to use Supabase auth middleware
+  - Pushed database schema to Supabase successfully
+
+- **AI-Powered Portfolio Customization:**
+  - Integrated OpenAI GPT-5 for AI-powered content generation
+  - Created AI service with two main functions:
+    - `generatePortfolioContent()` - Generates personalized portfolio data from user input
+    - `customizeTemplate()` - Automatically fills templates with user information
+  - Added AI API endpoints:
+    - `/api/ai/generate-portfolio` - Generate portfolio content
+    - `/api/ai/customize-template` - Customize templates with user data
+
+- **Frontend Updates:**
+  - Created new authentication page (`/auth`) with sign in/sign up tabs
+  - Updated all login links from `/api/login` to `/auth`
+  - Maintained existing UI/UX and dark mode theme
+  - Ready for AI integration in onboarding flow
+
 ### Phase 1: Schema & Frontend (Completed)
 **Date:** October 15, 2025
 
@@ -42,10 +67,11 @@ Portify is a modern portfolio builder platform that allows users to create stunn
 
 **Backend:**
 - Express.js with TypeScript
-- PostgreSQL (Neon) database
+- Supabase PostgreSQL database
 - Drizzle ORM
-- Replit Auth (OpenID Connect)
+- Supabase Auth (email/password)
 - Session management with connect-pg-simple
+- OpenAI GPT-5 for AI features
 
 **Design System:**
 - Primary color: Purple (265 85% 62%)
@@ -74,8 +100,9 @@ Portify is a modern portfolio builder platform that allows users to create stunn
 
 **Auth Routes:**
 - `GET /api/auth/user` - Get current user (protected)
-- `GET /api/login` - Initiate login flow
-- `GET /api/logout` - Logout user
+- `POST /api/auth/signup` - Create new account
+- `POST /api/auth/signin` - Sign in with email/password
+- `POST /api/auth/signout` - Sign out user
 
 **Portfolio Routes:**
 - `GET /api/portfolios` - List user portfolios (protected)
@@ -95,6 +122,10 @@ Portify is a modern portfolio builder platform that allows users to create stunn
 - `GET /api/social-links?portfolioId=:id` - List social links (protected)
 - `POST /api/social-links` - Add social link (protected)
 - `DELETE /api/social-links/:id` - Delete social link (protected)
+
+**AI Routes:**
+- `POST /api/ai/generate-portfolio` - Generate portfolio content with AI (protected)
+- `POST /api/ai/customize-template` - Customize template with user data (protected)
 
 ## User Preferences
 
@@ -204,11 +235,9 @@ Portify is a modern portfolio builder platform that allows users to create stunn
 ## Environment Variables
 
 Required environment variables:
-- `DATABASE_URL` - PostgreSQL connection string (auto-configured)
-- `SESSION_SECRET` - Session encryption key (auto-configured)
-- `REPLIT_DOMAINS` - Comma-separated list of domains
-- `REPL_ID` - Replit application ID
-- `ISSUER_URL` - OIDC issuer URL (defaults to https://replit.com/oidc)
+- `DATABASE_URL` - Supabase PostgreSQL connection string
+- `SESSION_SECRET` - Session encryption key (optional, has default)
+- `OPENAI_API_KEY` - OpenAI API key for AI features
 
 ## Running the Project
 
