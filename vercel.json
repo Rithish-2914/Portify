@@ -1,30 +1,20 @@
 {
   "version": 2,
   "buildCommand": "npm run build",
-  "builds": [
-    {
-      "src": "dist/index.js",
-      "use": "@vercel/node",
-      "config": {
-        "maxDuration": 30
-      }
+  "outputDirectory": "dist/client",
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 30
     }
-  ],
-  "routes": [
+  },
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "/dist/index.js"
+      "source": "/api/:path*",
+      "destination": "/api"
     },
     {
-      "src": "/assets/(.*)",
-      "dest": "/dist/client/assets/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/dist/index.js"
+      "source": "/:path*",
+      "destination": "/api"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }
