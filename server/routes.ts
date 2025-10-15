@@ -4,6 +4,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./supabaseAuth";
 import { generatePortfolioContent, customizeTemplate } from "./aiService";
+import { TemplateCustomizer } from "./templateCustomizer";
 import { 
   insertPortfolioSchema,
   insertProjectSchema,
@@ -173,9 +174,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create template (protected - admin only for production)
-  app.post("/api/templates", async (req, res) => {
+  // Create template (protected - requires authentication)
+  app.post("/api/templates", isAuthenticated, async (req: any, res) => {
     try {
+      // TODO: Add admin role check in production
+      // For now, only authenticated users can create templates
+      // In production, add: if (!req.user.isAdmin) return res.status(403).json({ message: "Admin access required" });
+      
       const validatedData = insertTemplateSchema.parse(req.body);
       const template = await storage.createTemplate(validatedData);
       res.status(201).json(template);
@@ -185,6 +190,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
       }
       res.status(500).json({ message: "Failed to create template" });
+    }
+  });
+
+  // Get sample template to demonstrate variable system
+  app.get("/api/templates/sample/demo", async (req, res) => {
+    try {
+      const sample = TemplateCustomizer.getSampleTemplate();
+      res.json(sample);
+    } catch (error) {
+      console.error("Error fetching sample template:", error);
+      res.status(500).json({ message: "Failed to fetch sample template" });
+    }
+  });
+
+  // Preview template with user's data (protected)
+  app.get("/api/templates/:id/preview", isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.id;
+      
+      // Get template
+      const template = await storage.getTemplate(id);
+      if (!template) {
+        return res.status(404).json({ message: "Template not found" });
+      }
+
+      // Get user's portfolio data
+      const portfolios = await storage.getUserPortfolios(userId);
+      const portfolio = portfolios[0]; // Use first portfolio for preview
+      
+      if (!portfolio) {
+        return res.status(404).json({ message: "No portfolio found. Create one first." });
+      }
+
+      // Get projects and social links
+      const projects = await storage.getPortfolioProjects(portfolio.id);
+      const socialLinks = await storage.getPortfolioSocialLinks(portfolio.id);
+
+      // Customize template with user data
+      const customized = TemplateCustomizer.generateCompletePage(
+        template.htmlContent || '',
+        template.cssContent || '',
+        template.jsContent || '',
+        { portfolio, projects, socialLinks }
+      );
+
+      res.send(customized);
+    } catch (error) {
+      console.error("Error previewing template:", error);
+      res.status(500).json({ message: "Failed to preview template" });
+    }
+  });
+
+  // Export customized portfolio (protected)
+  app.get("/api/portfolios/:id/export", isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.id;
+      
+      // Get portfolio
+      const portfolio = await storage.getPortfolio(id);
+      if (!portfolio) {
+        return res.status(404).json({ message: "Portfolio not found" });
+      }
+      
+      // Verify ownership
+      if (portfolio.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+
+      // Get template
+      const template = await storage.getTemplate(portfolio.templateId || '');
+      if (!template) {
+        return res.status(404).json({ message: "Template not found" });
+      }
+
+      // Get projects and social links
+      const projects = await storage.getPortfolioProjects(portfolio.id);
+      const socialLinks = await storage.getPortfolioSocialLinks(portfolio.id);
+
+      // Generate customized portfolio
+      const customized = TemplateCustomizer.generateCompletePage(
+        template.htmlContent || '',
+        template.cssContent || '',
+        template.jsContent || '',
+        { portfolio, projects, socialLinks }
+      );
+
+      // Send as downloadable HTML file
+      res.setHeader('Content-Type', 'text/html');
+      res.setHeader('Content-Disposition', `attachment; filename="${portfolio.name.replace(/\s+/g, '-').toLowerCase()}-portfolio.html"`);
+      res.send(customized);
+    } catch (error) {
+      console.error("Error exporting portfolio:", error);
+      res.status(500).json({ message: "Failed to export portfolio" });
     }
   });
 

@@ -17,6 +17,7 @@ import {
   Plus,
   ExternalLink,
   Sparkles,
+  Download,
 } from "lucide-react";
 import type { Portfolio } from "@shared/schema";
 import { TemplateSwitcher } from "@/components/template-switcher";
@@ -94,6 +95,13 @@ export default function Dashboard() {
       color: "from-purple-500 to-pink-500",
     },
     {
+      title: "Export Portfolio",
+      description: "Download as HTML file",
+      icon: Download,
+      action: "export",
+      color: "from-orange-500 to-red-500",
+    },
+    {
       title: "Share Portfolio",
       description: "Get your shareable link",
       icon: Share2,
@@ -109,6 +117,17 @@ export default function Dashboard() {
       toast({
         title: "Link Copied!",
         description: "Portfolio link copied to clipboard",
+      });
+    }
+  };
+
+  const handleExport = () => {
+    if (mainPortfolio?.id) {
+      // Download the portfolio as an HTML file
+      window.location.href = `/api/portfolios/${mainPortfolio.id}/export`;
+      toast({
+        title: "Exporting Portfolio",
+        description: "Your portfolio will download shortly",
       });
     }
   };
@@ -283,7 +302,11 @@ export default function Dashboard() {
                 <Card
                   key={index}
                   className="group cursor-pointer border-2 hover-elevate active-elevate-2 transition-all"
-                  onClick={() => action.action === "share" ? handleShare() : setLocation(action.href!)}
+                  onClick={() => {
+                    if (action.action === "share") handleShare();
+                    else if (action.action === "export") handleExport();
+                    else if (action.href) setLocation(action.href);
+                  }}
                   data-testid={`card-action-${index}`}
                 >
                   <CardContent className="p-6">

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   Search, 
   Filter,
@@ -16,6 +17,7 @@ import {
   Rocket,
   Code,
   Eye,
+  User,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import type { Template } from "@shared/schema";
@@ -33,10 +35,16 @@ const categories = [
 export default function Templates() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const { isAuthenticated } = useAuth();
 
   const { data: allTemplates = [], isLoading } = useQuery<Template[]>({
     queryKey: ["/api/templates"],
   });
+
+  const handlePreviewWithData = (templateId: string) => {
+    // Open preview in new window with user's data
+    window.open(`/api/templates/${templateId}/preview`, '_blank');
+  };
 
   const filteredTemplates = allTemplates.filter(template => {
     const matchesCategory = selectedCategory === "all" || template.category === selectedCategory;
@@ -163,11 +171,30 @@ export default function Templates() {
                   )}
                   
                   {/* Hover Overlay */}
-                  <div className="absolute inset-0 bg-black/60 opacity-0 transition-opacity group-hover:opacity-100 flex items-center justify-center gap-2">
-                    <Button size="sm" variant="secondary" data-testid={`button-preview-${template.id}`}>
-                      <Eye className="mr-2 h-4 w-4" />
-                      Preview
-                    </Button>
+                  <div className="absolute inset-0 bg-black/60 opacity-0 transition-opacity group-hover:opacity-100 flex flex-col items-center justify-center gap-2 p-4">
+                    {template.previewUrl && (
+                      <Button 
+                        size="sm" 
+                        variant="secondary" 
+                        onClick={() => window.open(template.previewUrl || '', '_blank')}
+                        data-testid={`button-preview-${template.id}`}
+                      >
+                        <Eye className="mr-2 h-4 w-4" />
+                        Preview Demo
+                      </Button>
+                    )}
+                    {isAuthenticated && template.htmlContent && (
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        className="bg-white/10 hover:bg-white/20"
+                        onClick={() => handlePreviewWithData(template.id)}
+                        data-testid={`button-preview-data-${template.id}`}
+                      >
+                        <User className="mr-2 h-4 w-4" />
+                        Preview with My Data
+                      </Button>
+                    )}
                     <Button size="sm" data-testid={`button-use-template-${template.id}`}>
                       Use Template
                     </Button>
