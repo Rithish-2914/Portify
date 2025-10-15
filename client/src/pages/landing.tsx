@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { motion } from "framer-motion";
 import { 
   Sparkles, 
   Palette, 
@@ -15,17 +16,19 @@ import {
   Users,
   Layout,
   Wand2,
+  Layers,
+  Box,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function Landing() {
   const categories = [
-    { name: "Minimal", icon: Layout, count: "200+", color: "from-blue-500 to-cyan-500" },
-    { name: "3D", icon: Sparkles, count: "150+", color: "from-purple-500 to-pink-500" },
-    { name: "Animated", icon: Zap, count: "180+", color: "from-orange-500 to-red-500" },
-    { name: "Visual", icon: Palette, count: "220+", color: "from-green-500 to-emerald-500" },
-    { name: "Futuristic", icon: Rocket, count: "140+", color: "from-violet-500 to-purple-500" },
-    { name: "Gamer", icon: Code, count: "110+", color: "from-pink-500 to-rose-500" },
+    { name: "Minimal", icon: Layout, count: "200+" },
+    { name: "3D", icon: Box, count: "150+" },
+    { name: "Animated", icon: Zap, count: "180+" },
+    { name: "Visual", icon: Palette, count: "220+" },
+    { name: "Futuristic", icon: Rocket, count: "140+" },
+    { name: "Gamer", icon: Code, count: "110+" },
   ];
 
   const features = [
@@ -58,24 +61,6 @@ export default function Landing() {
       icon: Zap,
       title: "Template Switching",
       description: "Change your portfolio design anytime with one click - no data loss",
-    },
-  ];
-
-  const steps = [
-    {
-      number: "01",
-      title: "Sign Up & Profile",
-      description: "Create your account and fill in your basic information, bio, and upload your photo",
-    },
-    {
-      number: "02",
-      title: "Choose Template",
-      description: "Browse 1000+ templates and select the perfect design for your portfolio",
-    },
-    {
-      number: "03",
-      title: "Publish Instantly",
-      description: "Your portfolio goes live with a custom subdomain - share it with the world",
     },
   ];
 
@@ -125,256 +110,353 @@ export default function Landing() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-black text-white overflow-hidden">
       {/* Navigation */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl">
-        <div className="container flex h-16 items-center justify-between px-4 md:px-6">
+      <motion.header 
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="fixed top-0 z-50 w-full border-b border-white/10 bg-black/50 backdrop-blur-2xl"
+      >
+        <div className="container flex h-20 items-center justify-between px-4 md:px-6">
           <Link href="/">
-            <span className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <motion.span 
+              className="text-3xl font-bold tracking-tighter text-white"
+              whileHover={{ scale: 1.05 }}
+            >
               Portify
-            </span>
+            </motion.span>
           </Link>
           <div className="flex items-center gap-4">
-            <ThemeToggle />
-            <Button asChild variant="ghost" data-testid="button-login">
+            <Button asChild variant="ghost" className="text-white hover:bg-white/10" data-testid="button-login">
               <a href="/auth">Log In</a>
             </Button>
-            <Button asChild data-testid="button-signup">
+            <Button asChild className="bg-white text-black hover:bg-white/90" data-testid="button-signup">
               <a href="/auth">Get Started</a>
             </Button>
           </div>
         </div>
-      </header>
+      </motion.header>
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 md:py-32">
-        <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:60px_60px]" />
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-transparent to-transparent" />
+      {/* Hero Section with 3D Grid */}
+      <section className="relative min-h-screen flex items-center justify-center pt-20">
+        {/* Animated 3D Grid Background */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
         
-        <div className="container relative px-4 md:px-6">
-          <div className="mx-auto max-w-4xl text-center">
-            <Badge variant="secondary" className="mb-6" data-testid="badge-hero">
-              <Sparkles className="mr-2 h-3 w-3" />
-              1000+ Professional Templates
-            </Badge>
+        <div className="container relative px-4 md:px-6 z-10">
+          <div className="mx-auto max-w-5xl text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <Badge variant="outline" className="mb-8 border-white/20 bg-white/5 text-white backdrop-blur-sm" data-testid="badge-hero">
+                <Sparkles className="mr-2 h-3 w-3" />
+                1000+ Professional Templates
+              </Badge>
+            </motion.div>
             
-            <h1 className="mb-6 text-5xl font-bold tracking-tight md:text-6xl lg:text-7xl">
+            <motion.h1 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="mb-8 text-6xl font-black tracking-tighter md:text-7xl lg:text-8xl"
+            >
               Build Your Dream{" "}
-              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              <span className="inline-block bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
                 Portfolio
               </span>
-              {" "}in Minutes
-            </h1>
+            </motion.h1>
             
-            <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground md:text-xl">
+            <motion.p 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="mx-auto mb-12 max-w-2xl text-xl text-white/70 md:text-2xl"
+            >
               Choose from 1000+ stunning templates. No code required. 
               Perfect for developers, designers, gamers, and creators.
-            </p>
+            </motion.p>
             
-            <div className="flex flex-wrap items-center justify-center gap-4">
-              <Button asChild size="lg" className="text-base" data-testid="button-hero-cta">
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+              className="flex flex-wrap items-center justify-center gap-4"
+            >
+              <Button asChild size="lg" className="bg-white text-black text-lg px-8 py-6 hover:bg-white/90 group" data-testid="button-hero-cta">
                 <a href="/auth">
                   Start Building Free
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </a>
               </Button>
-              <Button asChild variant="outline" size="lg" className="text-base" data-testid="button-browse-templates">
+              <Button asChild variant="outline" size="lg" className="border-white/20 bg-white/5 text-white text-lg px-8 py-6 hover:bg-white/10 backdrop-blur-sm" data-testid="button-browse-templates">
                 <a href="/templates">
                   Browse Templates
                 </a>
               </Button>
-            </div>
+            </motion.div>
 
-            <div className="mt-12 flex items-center justify-center gap-8 text-sm text-muted-foreground">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.8 }}
+              className="mt-16 flex items-center justify-center gap-12 text-sm text-white/50"
+            >
               <div className="flex items-center gap-2">
-                <Star className="h-4 w-4 fill-primary text-primary" />
+                <Star className="h-4 w-4 fill-white text-white" />
                 <span>10,000+ portfolios created</span>
               </div>
               <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-accent" />
+                <Users className="h-4 w-4 text-white" />
                 <span>5,000+ active users</span>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
+
+        {/* Floating gradient orbs */}
+        <motion.div
+          className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl"
+          animate={{
+            y: [0, -30, 0],
+            scale: [1, 1.1, 1],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div
+          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl"
+          animate={{
+            y: [0, 30, 0],
+            scale: [1, 1.1, 1],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
       </section>
 
-      {/* Template Categories */}
-      <section className="border-t py-16 md:py-24">
+      {/* 3D Floating Category Cards */}
+      <section className="relative py-32 border-t border-white/10">
         <div className="container px-4 md:px-6">
-          <div className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold md:text-4xl">Explore by Category</h2>
-            <p className="text-lg text-muted-foreground">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="mb-20 text-center"
+          >
+            <h2 className="mb-6 text-5xl font-black tracking-tighter md:text-6xl">Explore by Category</h2>
+            <p className="text-xl text-white/60">
               Find the perfect template for your style and profession
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+          <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-6">
             {categories.map((category, index) => (
-              <Card 
+              <motion.div
                 key={index}
-                className="group cursor-pointer border-2 hover-elevate active-elevate-2 transition-all"
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={{ 
+                  y: -10,
+                  transition: { duration: 0.2 }
+                }}
                 data-testid={`card-category-${category.name.toLowerCase()}`}
               >
-                <CardContent className="flex flex-col items-center justify-center p-6 text-center">
-                  <div className={`mb-4 rounded-full bg-gradient-to-br ${category.color} p-3`}>
-                    <category.icon className="h-6 w-6 text-white" />
-                  </div>
-                  <h3 className="mb-1 font-semibold">{category.name}</h3>
-                  <p className="text-sm text-muted-foreground">{category.count}</p>
-                </CardContent>
-              </Card>
+                <Card className="group relative overflow-hidden border-white/10 bg-white/5 backdrop-blur-sm hover:border-white/30 hover:bg-white/10 transition-all duration-300 cursor-pointer transform-gpu perspective-1000">
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <CardContent className="flex flex-col items-center justify-center p-8 text-center relative z-10">
+                    <motion.div 
+                      className="mb-4 rounded-2xl bg-white/10 p-4 backdrop-blur-sm group-hover:bg-white/20 transition-colors"
+                      whileHover={{ rotateY: 180 }}
+                      transition={{ duration: 0.6 }}
+                    >
+                      <category.icon className="h-8 w-8 text-white" />
+                    </motion.div>
+                    <h3 className="mb-2 font-bold text-lg">{category.name}</h3>
+                    <p className="text-sm text-white/50">{category.count}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="border-t bg-muted/30 py-16 md:py-24">
+      {/* Features with Floating Cards */}
+      <section className="relative py-32 border-t border-white/10">
         <div className="container px-4 md:px-6">
-          <div className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold md:text-4xl">Everything You Need</h2>
-            <p className="text-lg text-muted-foreground">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="mb-20 text-center"
+          >
+            <h2 className="mb-6 text-5xl font-black tracking-tighter md:text-6xl">Everything You Need</h2>
+            <p className="text-xl text-white/60">
               Powerful features to make your portfolio stand out
             </p>
-          </div>
+          </motion.div>
 
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {features.map((feature, index) => (
-              <Card key={index} className="border-2" data-testid={`card-feature-${index}`}>
-                <CardContent className="p-6">
-                  <div className="mb-4 inline-flex rounded-lg bg-primary/10 p-3">
-                    <feature.icon className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="mb-2 text-xl font-semibold">{feature.title}</h3>
-                  <p className="text-muted-foreground">{feature.description}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="border-t py-16 md:py-24">
-        <div className="container px-4 md:px-6">
-          <div className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold md:text-4xl">How It Works</h2>
-            <p className="text-lg text-muted-foreground">
-              Three simple steps to your perfect portfolio
-            </p>
-          </div>
-
-          <div className="mx-auto max-w-4xl">
-            {steps.map((step, index) => (
-              <div 
+              <motion.div
                 key={index}
-                className="mb-8 flex gap-6 last:mb-0"
-                data-testid={`step-${index}`}
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={{ 
+                  scale: 1.05,
+                  rotateY: 5,
+                  rotateX: 5,
+                  transition: { duration: 0.3 }
+                }}
+                data-testid={`card-feature-${index}`}
               >
-                <div className="flex flex-col items-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground">
-                    {step.number}
-                  </div>
-                  {index < steps.length - 1 && (
-                    <div className="mt-2 h-full w-px bg-border" />
-                  )}
-                </div>
-                <div className="flex-1 pb-8">
-                  <h3 className="mb-2 text-xl font-semibold">{step.title}</h3>
-                  <p className="text-muted-foreground">{step.description}</p>
-                </div>
-              </div>
+                <Card className="relative h-full overflow-hidden border-white/10 bg-white/5 backdrop-blur-sm hover:border-white/30 hover:bg-white/10 transition-all duration-300 transform-gpu">
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300" />
+                  <CardContent className="p-8 relative z-10">
+                    <div className="mb-6 inline-flex rounded-xl bg-white/10 p-4 backdrop-blur-sm">
+                      <feature.icon className="h-8 w-8 text-white" />
+                    </div>
+                    <h3 className="mb-3 text-2xl font-bold">{feature.title}</h3>
+                    <p className="text-white/60 leading-relaxed">{feature.description}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Pricing */}
-      <section className="border-t bg-muted/30 py-16 md:py-24">
+      {/* Pricing with 3D Cards */}
+      <section className="relative py-32 border-t border-white/10">
         <div className="container px-4 md:px-6">
-          <div className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold md:text-4xl">Choose Your Plan</h2>
-            <p className="text-lg text-muted-foreground">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="mb-20 text-center"
+          >
+            <h2 className="mb-6 text-5xl font-black tracking-tighter md:text-6xl">Choose Your Plan</h2>
+            <p className="text-xl text-white/60">
               Start free, upgrade when you need more
             </p>
-          </div>
+          </motion.div>
 
-          <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
+          <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
             {pricingPlans.map((plan, index) => (
-              <Card 
+              <motion.div
                 key={index}
-                className={`relative border-2 ${plan.highlighted ? 'border-primary shadow-lg' : ''}`}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.2 }}
+                whileHover={{ 
+                  y: -20,
+                  transition: { duration: 0.3 }
+                }}
                 data-testid={`card-pricing-${plan.name.toLowerCase()}`}
               >
-                {plan.highlighted && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary">
-                    Most Popular
-                  </Badge>
-                )}
-                <CardContent className="p-6">
-                  <h3 className="mb-2 text-2xl font-bold">{plan.name}</h3>
-                  <div className="mb-6">
-                    <span className="text-4xl font-bold">{plan.price}</span>
-                    <span className="text-muted-foreground">{plan.period}</span>
-                  </div>
-                  <Button 
-                    asChild
-                    className="mb-6 w-full" 
-                    variant={plan.highlighted ? "default" : "outline"}
-                    data-testid={`button-pricing-${plan.name.toLowerCase()}`}
-                  >
-                    <a href="/auth">{plan.cta}</a>
-                  </Button>
-                  <ul className="space-y-3">
-                    {plan.features.map((feature, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <Check className="h-5 w-5 shrink-0 text-primary" />
-                        <span className="text-sm">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
+                <Card 
+                  className={`relative h-full overflow-hidden border-white/10 bg-white/5 backdrop-blur-sm transition-all duration-300 transform-gpu ${
+                    plan.highlighted ? 'border-white/40 bg-white/10 shadow-2xl shadow-white/20' : 'hover:border-white/30'
+                  }`}
+                >
+                  {plan.highlighted && (
+                    <div className="absolute -top-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
+                  )}
+                  {plan.highlighted && (
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white text-black border-0">
+                      Most Popular
+                    </Badge>
+                  )}
+                  <CardContent className="p-8 relative z-10">
+                    <h3 className="mb-3 text-3xl font-black">{plan.name}</h3>
+                    <div className="mb-8">
+                      <span className="text-6xl font-black">{plan.price}</span>
+                      <span className="text-white/50 text-lg">{plan.period}</span>
+                    </div>
+                    <Button 
+                      asChild
+                      className={`mb-8 w-full py-6 text-lg ${
+                        plan.highlighted 
+                          ? "bg-white text-black hover:bg-white/90" 
+                          : "border-white/20 bg-white/5 text-white hover:bg-white/10"
+                      }`}
+                      variant={plan.highlighted ? "default" : "outline"}
+                      data-testid={`button-pricing-${plan.name.toLowerCase()}`}
+                    >
+                      <a href="/auth">{plan.cta}</a>
+                    </Button>
+                    <ul className="space-y-4">
+                      {plan.features.map((feature, i) => (
+                        <li key={i} className="flex items-start gap-3">
+                          <Check className="h-6 w-6 shrink-0 text-white mt-0.5" />
+                          <span className="text-white/80">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
       {/* Final CTA */}
-      <section className="border-t py-20 md:py-32">
+      <section className="relative py-32 border-t border-white/10">
         <div className="container px-4 md:px-6">
-          <div className="mx-auto max-w-3xl text-center">
-            <h2 className="mb-6 text-4xl font-bold md:text-5xl">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="mx-auto max-w-4xl text-center"
+          >
+            <h2 className="mb-8 text-5xl font-black tracking-tighter md:text-6xl lg:text-7xl">
               Ready to Build Your Portfolio?
             </h2>
-            <p className="mb-8 text-lg text-muted-foreground">
+            <p className="mb-12 text-xl text-white/60">
               Join thousands of creators who have already built their dream portfolio
             </p>
-            <Button asChild size="lg" className="text-base" data-testid="button-final-cta">
+            <Button asChild size="lg" className="bg-white text-black text-lg px-12 py-6 hover:bg-white/90 group" data-testid="button-final-cta">
               <a href="/auth">
                 Get Started Free
-                <ArrowRight className="ml-2 h-5 w-5" />
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </a>
             </Button>
-            <p className="mt-4 text-sm text-muted-foreground">
+            <p className="mt-6 text-sm text-white/40">
               No credit card required • Free forever plan available
             </p>
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t py-8">
+      <footer className="border-t border-white/10 py-12">
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-white/40">
               © 2025 Portify. All rights reserved.
             </p>
-            <div className="flex gap-6 text-sm text-muted-foreground">
-              <Link href="/privacy">Privacy</Link>
-              <Link href="/terms">Terms</Link>
-              <Link href="/contact">Contact</Link>
+            <div className="flex gap-8 text-sm text-white/40">
+              <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
+              <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
+              <Link href="/contact" className="hover:text-white transition-colors">Contact</Link>
             </div>
           </div>
         </div>
